@@ -22,3 +22,6 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
+
+## ER図
+https://dbdiagram.io/d/60ed3f504ed9be1c05ca18cf
