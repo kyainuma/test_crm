@@ -35,7 +35,7 @@ module App
     # Don't generate system test files.
     config.generators.system_tests = nil
 
-    # 作成ファイルslimに変更
+    # slim
     config.generators.template_engine = :slim
   end
 end
