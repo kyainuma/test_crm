@@ -13,7 +13,7 @@ RUN CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_R
     apt-get update --fix-missing && apt-get install -y google-chrome-stable
 WORKDIR /app
 COPY Gemfile Gemfile.lock /app/
-RUN bundle config set path 'vendor/bundle' && bundle install
+RUN bundle install
 RUN yarn install --check-files
 RUN bundle exec rails assets:precompile
 
