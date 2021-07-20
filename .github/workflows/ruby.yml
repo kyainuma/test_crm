@@ -23,6 +23,7 @@ jobs:
         docker-compose run app yarn upgrade
         docker-compose build
         docker-compose run app rake db:create
+        docker-compose run app rake db:migrate
       env:
         RAILS_ENV: test
 
