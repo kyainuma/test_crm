@@ -1,7 +1,7 @@
 # Your workflow name.
 name: Deploy to heroku.
 
-# Run workflow on every push to main branch.
+# Run workflow on every push to master branch.
 on:
   push:
     branches: [main]
@@ -10,66 +10,43 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      db:
-        image: mysql:5.7
-        env:
-          MYSQL_USERNAME: root
-          MYSQL_ROOT_PASSWORD: password
-    container:
-      image: ruby:2.7.3
-      env:
-        RAILS_ENV: test
-        MYSQL_HOST: db
-        MYSQL_USERNAME: root
-        MYSQL_ROOT_PASSWORD: password
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v1
+      # Check-out your repository.
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build, Push and Release a Docker container to Heroku. # Your custom step name
+        uses: gonuit/heroku-docker-deploy@v1.3.3 # GitHub action name (leave it as it is).
         with:
-          path: vendor/bundle
-          key: bundle-${{ hashFiles('**/Gemfile.lock') }}
-      - uses: actions/cache@v1
-        with:
-          path: node_modules
-          key: yarn-${{ hashFiles('**/yarn.lock') }}
-      - name: Setup yarn and node
-        run: |
-          curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-          echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-          apt-get update -qq
-          apt-get install -y nodejs yarn
-          yarn install
-      - name: Setup Chrome Driver
-        run: |
-          CHROME_DRIVER_VERSION=`curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE`
-          wget -N http://chromedriver.storage.googleapis.com/$CHROME_DRIVER_VERSION/chromedriver_linux64.zip -P ~/
-          unzip ~/chromedriver_linux64.zip -d ~/
-          rm ~/chromedriver_linux64.zip
-          mv ~/chromedriver /usr/bin/chromedriver
-          sh -c 'wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
-          sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list'
-          apt-get update --fix-missing && apt-get install -y google-chrome-stable
-      - name: Setup bundles
-        run: bundle install
-      - name: Setup Database
-        run: |
-          bundle exec rails db:create
-          bundle exec rails db:migrate
-      - name: Run RSpec
-        run: |
-          bundle exec rspec
-      - name: Run RuboCop
-        run: |
-          bundle exec rubocop
-          
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.7.8
-        with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          # Below you must provide variables for your Heroku app.
+
+          # The email address associated with your Heroku account.
+          # If you don't want to use repository secrets (which is recommended) you can do:
+          # email: my.email@example.com
+          email: ${{ secrets.HEROKU_EMAIL }}
+
+          # Heroku API key associated with provided user's email.
+          # Api Key is available under your Heroku account settings.
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+
+          # Name of the heroku application to which the build is to be sent.
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+
+          # (Optional, default: "./")
+          # Dockerfile directory.
+          # For example, if you have a Dockerfile in the root of your project, leave it as follows:
+          dockerfile_directory: ./
+
+          # (Optional, default: "Dockerfile")
+          # Dockerfile name.
+          dockerfile_name: Dockerfile.prod
+
+          # (Optional, default: "")
+          # Additional options of docker build command.
+          docker_options: "--no-cache"
+
+          # (Optional, default: "web")
+          # Select the process type for which you want the docker container to be uploaded.
+          # By default, this argument is set to "web".
+          # For more information look at https://devcenter.heroku.com/articles/process-model
+          process_type: web
