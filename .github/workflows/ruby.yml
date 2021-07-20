@@ -21,7 +21,7 @@ jobs:
       env:
         RAILS_ENV: test
       run: |
-        docker-compose up -d
+        docker-compose up --build
         docker-compose run --rm app bin/rake db:create
         docker-compose run --rm app bin/rake db:migrate
 
