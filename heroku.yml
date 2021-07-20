@@ -1,5 +1,12 @@
 build:
   docker:
-    web: Dockerfile
+    web: Dockerfile.prod
+  config:
+    RAILS_ENV: development
+
+release:
+  command:
+    - bundle exec rake db:migrate
+
 run:
-  web: bundle exec rails db:migrate && bundle exec puma -C config/puma.rb
+  web: bundle exec puma -C config/puma.rb
